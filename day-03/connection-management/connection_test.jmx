@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+   <jmeterTestPlan version="1.2" properties="5.0">
+     <hashTree>
+       <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="CockroachDB Connection Test">
+         <elementProp name="TestPlan.user_defined_variables" elementType="Arguments">
+           <collectionProp name="Arguments.arguments"/>
+         </elementProp>
+       </TestPlan>
+       <hashTree>
+         <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Connection Group">
+           <elementProp name="ThreadGroup.main_controller" elementType="LoopController">
+             <boolProp name="LoopController.continue_forever">false</boolProp>
+             <intProp name="LoopController.loops">10</intProp>
+           </elementProp>
+           <stringProp name="ThreadGroup.num_threads">10</stringProp>
+           <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+           <boolProp name="ThreadGroup.scheduler">false</boolProp>
+         </ThreadGroup>
+         <hashTree>
+           <SystemSampler guiclass="SystemSamplerGui" testclass="SystemSampler" testname="Java Connection Test">
+             <stringProp name="SystemSampler.directory">.</stringProp>
+             <stringProp name="SystemSampler.command">java</stringProp>
+             <elementProp name="SystemSampler.arguments" elementType="Arguments">
+               <collectionProp name="Arguments.arguments">
+                 <elementProp name="classname" elementType="Argument">
+                   <stringProp name="Argument.name">classname</stringProp>
+                   <stringProp name="Argument.value">TestApp</stringProp>
+                   <stringProp name="Argument.metadata">=</stringProp>
+                 </elementProp>
+               </collectionProp>
+             </elementProp>
+           </SystemSampler>
+           <hashTree/>
+         </hashTree>
+       </hashTree>
+     </hashTree>
+   </jmeterTestPlan>
