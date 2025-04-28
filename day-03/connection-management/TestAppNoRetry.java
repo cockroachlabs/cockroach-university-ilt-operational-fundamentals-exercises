@@ -1,49 +1,62 @@
 import java.sql.*;
 import java.util.Random;
-import java.time.LocalDate;
 
-public class TestAppNoRetry {
+public class TestWithoutRetry {
     public static void main(String[] args) {
-        String url = "jdbc:postgresql://haproxy:26257/bookly?sslmode=require";
+        System.out.println("Starting TestWithoutRetry");
+        
+        String url = "jdbc:postgresql://node1:26257/bookly?sslmode=require&sslfactory=org.postgresql.ssl.NonValidatingFactory";
         String user = "root";
-        String password = "";
-
-        try (Connection conn = DriverManager.getConnection(url, user, password)) {
-            // Generate random book data
-            Random rand = new Random();
-            String[] titles = {"The Great Adventure", "Database Fundamentals", "SQL Mastery",
-                               "Distributed Systems", "Cloud Computing", "Java Programming"};
-            String[] authors = {"J. Smith", "A. Johnson", "M. Davis", "S. Wilson", "K. Martin"};
-            String[] formats = {"Hardcover", "Paperback", "E-book", "Audiobook"};
-
-            String title = titles[rand.nextInt(titles.length)];
-            String author = authors[rand.nextInt(authors.length)];
-            float price = 9.99f + rand.nextFloat() * 40.0f; // Random price between 9.99 and 49.99
-            String format = formats[rand.nextInt(formats.length)];
-            LocalDate publishDate = LocalDate.now().minusDays(rand.nextInt(1000)); // Random date in past 1000 days
-
-            // Insert data without retry logic
-            conn.setAutoCommit(false);
-            try (PreparedStatement ps = conn.prepareStatement(
-                    "INSERT INTO book (title, author, price, format, publish_date) VALUES (?, ?, ?, ?, ?)")) {
-                ps.setString(1, title);
-                ps.setString(2, author);
-                ps.setFloat(3, price);
-                ps.setString(4, format);
-                ps.setDate(5, java.sql.Date.valueOf(publishDate));
-                ps.executeUpdate();
-            }
-            conn.commit();
-
-            // Query to verify the insert
-            try (Statement stmt = conn.createStatement();
-                 ResultSet rs = stmt.executeQuery("SELECT book_id, title FROM book WHERE title = '" + title + "' AND author = '" + author + "' LIMIT 1")) {
-                if (rs.next()) {
-                    System.out.println("Test complete. Book ID: " + rs.getString("book_id") + ", Title: " + rs.getString("title"));
+        String password = "pass";
+        
+        int totalTransactions = 0;
+        int successfulTransactions = 0;
+        int failedTransactions = 0;
+        
+        try {
+            // Run transactions in a loop
+            for (int i = 0; i < 10; i++) {
+                totalTransactions++;
+                boolean success = executeTransactionWithoutRetry(url, user, password);
+                if (success) {
+                    successfulTransactions++;
+                } else {
+                    failedTransactions++;
                 }
+                Thread.sleep(500); // Pause between transactions
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+        
+        System.out.println("WITHOUT RETRY - Total: " + totalTransactions + 
+                           ", Successful: " + successfulTransactions + 
+                           ", Failed: " + failedTransactions);
+    }
+    
+    private static boolean executeTransactionWithoutRetry(String url, String user, String password) {
+        try (Connection conn = DriverManager.getConnection(url, user, password)) {
+            conn.setAutoCommit(false);
+            
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "INSERT INTO book (title, author, price, format, publish_date) VALUES (?, ?, ?, ?, ?)")) {
+                ps.setString(1, "Test Book Without Retry " + System.currentTimeMillis());
+                ps.setString(2, "No Retry Test");
+                ps.setFloat(3, 19.99f);
+                ps.setString(4, "E-book");
+                ps.setDate(5, new java.sql.Date(System.currentTimeMillis()));
+                ps.executeUpdate();
+            }
+            
+            conn.commit();
+            System.out.println("Transaction successful");
+            return true;
+        } catch (SQLException e) {
+            System.out.println("SQL Exception: " + e.getMessage() + " (SQLState: " + e.getSQLState() + ")");
+            return false;
+        } catch (Exception e) {
+            System.out.println("Unexpected error: " + e.getMessage());
+            return false;
         }
     }
 }
