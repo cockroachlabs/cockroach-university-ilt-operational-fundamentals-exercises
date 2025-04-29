@@ -1,9 +1,9 @@
 import java.sql.*;
 import java.util.Random;
 
-public class TestWithRetry {
+public class TestApp {
     public static void main(String[] args) {
-        System.out.println("Starting TestWithRetry");
+        System.out.println("Starting TestApp");
         
         String initialUrl = "jdbc:postgresql://node1:26257/bookly?sslmode=require&sslfactory=org.postgresql.ssl.NonValidatingFactory";
         String fallbackUrl = "jdbc:postgresql://haproxy:26257/bookly?sslmode=require&sslfactory=org.postgresql.ssl.NonValidatingFactory";
@@ -60,6 +60,7 @@ public class TestWithRetry {
                 System.out.println("Transaction successful using " + currentUrl);
                 return true;
             } catch (SQLException e) {
+                // retry logic
                 retries++;
                 System.out.println("SQL Exception: " + e.getMessage() + " (SQLState: " + e.getSQLState() + ")");
                 
