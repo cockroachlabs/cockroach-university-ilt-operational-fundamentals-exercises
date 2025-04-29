@@ -1,9 +1,9 @@
 import java.sql.*;
 import java.util.Random;
 
-public class TestWithoutRetry {
+public class TestAppNoRetry {
     public static void main(String[] args) {
-        System.out.println("Starting TestWithoutRetry");
+        System.out.println("Starting TestAppNoRetry");
         
         String url = "jdbc:postgresql://node1:26257/bookly?sslmode=require&sslfactory=org.postgresql.ssl.NonValidatingFactory";
         String user = "root";
